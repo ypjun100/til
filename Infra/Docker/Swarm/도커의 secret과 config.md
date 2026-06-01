@@ -27,6 +27,21 @@ mysql
 
 ### Config
 
+```shell
+# config 생성 및 조회
+docker config create registry-config config.yml
+docker config inspect registry-config # 데이터는 Base64로 인코딩되어 저장됨
+
+# 서비스에 적용
+docker service create --name yml_registry -p 5000:5000 \
+	--config source=registry-config,target=/etc/docker/registry/config.yml \
+	registry:2.6
+```
+
 - 암호화가 필요 없는 설정값(nginx 설정, yml 파일 등)을 저장하는 데 사용하는 기능임
 - 스웜 클러스터의 내부 DB에 저장되며, 서비스 배포 시 컨테이너 내 특정 경로에 파일로 마운트됨
 - `inpect` 시 설정한 값이 노출되며, base64 디코딩으로 원문을 확인할 수 있음
+
+> [!Tip] 왜 데이터를 Base64로 인코딩하여 저장하는가?
+> - JSON 같은 포맷은 일부 이스케이프 문자에 민감한데, Base64로 변환하면 항상 ASCII 범위의 안전한 문자열이 됨
+> - Docker API는 JSON 기반이고, JSON은 텍스트 기반이라 바이너리를 직접 넣기 애매한데, Base64는 모든 데이터를 동일한 문자열 형태로 통일 가능함
